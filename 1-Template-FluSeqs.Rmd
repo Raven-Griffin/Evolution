@@ -1,12 +1,12 @@
 ---
 title: "1-Solutions-GenDistance"
-output: html_document
+output: pdf_document
 date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = "/Users/ravengriffin/Downloads/Evolution")
+knitr::opts_knit$set(root.dir = "/Users/ravengriffin/Documents/GitHub/Evolution/Evolution_2")
 
 ### Load packages (install if you haven't already)
 library(msa)
@@ -21,11 +21,11 @@ dnaSeqs = readDNAStringSet("flu_seqs.fasta")
 aligns = msa(dnaSeqs, method="ClustalOmega", order="input")
 
 
-# ── Load & normalize ──────────────────────────────────────────────────────────
+
 ```
 
 # Part II: Use the Phangorn package to compare substitution models
-```{r alignment}
+```{r modeltest}
 forPhang = msaConvert(aligns, type="phangorn::phyDat")
 
 mt = modelTest(forPhang, model=c("JC","F81","K80","HKY","TrN"))
@@ -34,7 +34,7 @@ write.table(mt, "modelTest_results.txt", quote=FALSE, sep="\t",row.names=FALSE, 
 
 ## Question 1: The Bayesian Information Criterion (BIC) is a method for comparing models that includes penalties for more complex models. With this method, the best one is the model with the LOWEST BIC score. In your test, which model is this? Describe this model in terms of its assumptions. (5 pts)
 
-YOUR ANSWER TO QUESTION ONE HERE.
+The lowest BIC is model HKY + G. "This model generalizes k80 by relaxing the assumption of equal base frequencies." - help in R
 
 # Part III: Calculate Genetic Distance Under the Best Model
 
@@ -43,9 +43,10 @@ YOUR ANSWER TO QUESTION ONE HERE.
 ```{r gendist}
 dna = as.DNAbin(forPhang)
 ?dist.dna()
-D = dist.dna(dna, model="TN93", gamma=FALSE)
+D = dist.dna(dna, model="F84", gamma=FALSE)
 ```
 
+I used gamma = False.
 # Part IV: Create both UPGMA and Neighbor-Joining Trees
 ```{r trees, fig.dim=c(8,8)}
 t.upgma = upgma(D)
@@ -59,24 +60,26 @@ treedist(t.upgma.root, t.nj.root)
 
 ## Question 3: Provide your plots for the rooted UPGMA and rooted Neighbor-Joining trees (be sure they are labeled so I can tell which is which!). Describe any differences you see in the overall appearance of the two trees. Do the same clades appear in each tree? Do viruses collected in later years branch off from the viruses of previous years (like we would expect)? (5 pts)
 
-YOUR ANSWER TO QUESTION 3 HERE.
+Upgma assumes clockwise evolution which causes this symmetrical looking tree. The clades are different in both trees. Most notably after 1996. Yes, viruses in later years branch off from previous years.
 
 # Part V: Calculate Distance Metrics Between the 2 Trees
 
 ## Question 4: What is the symmetric difference, branch score difference, and path difference between your two trees?  Which number implies the biggest difference in the trees?  Based on what you know about the definition of these metrics, why would one score be much higher than the others?  Does your highest score make sense given what you see when you plot the two trees? (3 pts)
 
-YOUR ANSWER TO QUESTION 4.
+The Symmetric difference is 40. The branch score difference is 0.01950911. The Path difference id 135.70556363. The symmetric implies the biggest difference in trees. Path difference sums differences in tip-to-tip path lengths across every possible pair of taxa in the tree. Because the number of pairwise combinations grows with the square of the number of tips, it naturally produces a much larger raw number, regardless of how different the trees actually are.
+
 
 # Part VI: Perform Bootstrapping on the Neighbor-Joining Tree
 
 ## Question 5: Provide a plot of your bootstrapped tree. Are there any nodes in your tree that seem to have very weak bootstrap support (i.e. less than 50%)? How many of these weakly supported nodes do you see? Which node has the weakest support, and what clade is this node at the base of? If it is hard to see exactly where the nodes are with the bootstrap labels on them, you might also want to refer back to your original plot without the labels to help you. (3 pts)
 
+
 ```{r bootstrap, fig.dim=c(8,8)}
-myBoots = boot.phylo(t.nj.root, dna, function(x) root(nj(dist.dna(x, model="TN93", gamma=TRUE)),1), trees=TRUE)
-plot(t.nj.root, cex=0.5, edge.width=2, main="Some Title for Your Tree")
+myBoots = boot.phylo(t.nj.root, dna, function(x) root(nj(dist.dna(x, model="F84", gamma=FALSE)),1), trees=TRUE)
+plot(t.nj.root, cex=0.5, edge.width=2, main="BootStrap Tree")
 nodelabels(myBoots$BP, cex=0.4)
 ```
-YOUR ANSWER TO QUESTION 5.
+There are 7 weak nodes: 48, 47, 37, 32, 30, 26, and 23. The weakest is 23, at the node uniting all three 1997 isolates (1997a, 1997b, 1997c) into a single clade. Everytime I knit the nodes change so this number might not be accurate but the clade is.
 
 ## Question 6: Provide a plot of your majority rule consensus tree. (1 pt)
 ```{r majorityrule, fig.dim=c(8,8)}
@@ -94,10 +97,10 @@ parsimony(t.nj.root, forPhang)
 tre.pars = pratchet(forPhang, start=t.nj)
 
 ```
-YOUR ANSWER TO QUESTION 7.
+UPGMA is a score of 377 while Neighbor-Joining is a score of 340. The  Neighbor-Joining is the most parsimonious. It means one tree has less independent mutations than the other when it is more parsimonious.  
 
-## Question 8: Were you able to improve on the parsimony score you got with the neighbor-joining tree? (1 pt)
-YOUR ANSWER TO QUESTION 8.
+## Question 8: Were you able to improve on the parsimony score you got with the neighbor-joining tree? (1 pt) 
+Yes
 
 ## Question 9: Provide the plot for your final tree. Even though there are still some uncertain relationships, can you now see any kind of trend with respect to the years the viruses were sampled and where they appear on the tree? Describe your new tree and the trends that you see. (3 pts)
 
@@ -108,12 +111,12 @@ t.nj.root$edge.length[toCollapse] = 0
 new.tree = di2multi(t.nj.root, tol=0.00001)
 plot(new.tree, type="unr", show.tip=FALSE, edge.width=2)
 title("Maximum-parsimony tree")
-install.packages("basetheme")
-install.packages("epicontacts")
+
+
 library(basetheme)
 library(epicontacts)
 year = as.numeric(gsub("[a-c]", "", names(forPhang)))
 tiplabels(t.nj.root$tip.label, bg=transp(num2col(year),.7), cex=.5, fg="transparent")
 ```
 
-YOUR ANSWER TO QUESTION 9.
+The older strains are being replaces with the newer strains as time goes on. There are larger clusters in the 2004-2008 clade which contains internal branching, the rate of evolution is increasing. The shape of the tree is asymmetric.
