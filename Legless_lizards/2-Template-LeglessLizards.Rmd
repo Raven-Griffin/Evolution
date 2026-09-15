@@ -6,12 +6,14 @@ date: "`r Sys.Date()`"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = "~/YOUR/WORKING/DIRECTORY/")
+knitr::opts_knit$set(root.dir = "/Users/ravengriffin/Documents/GitHub/Evolution/Evolution_2/Legless_lizards")
 
 ### Load the standard packages for aligning and tree-construction
 library(msa)
 library(phangorn)
 library(phytools)
+library(ips)
+library(castor)
 ```
 #Preparation
 
@@ -23,14 +25,40 @@ SLC8A1_aligned <- msa(SLC8A1_seqs, method = "ClustalOmega")
 
 # Part I: Use Neighbor-Joining Trees to Determine Which Gene To Use
 
+# R35
+R35_dnabin <- as.DNAbin(R35_aligned)
+R35_dist   <- dist.dna(R35_dnabin, model = "K80", gamma = TRUE)
+R35_tree   <- nj(R35_dist)
+R35_tree   <- root(R35_tree, outgroup = "Alligator", resolve.root = TRUE)
+plot(R35_tree)
+
+# SLC8A1
+SLC8A1_dnabin <- as.DNAbin(SLC8A1_aligned)
+SLC8A1_dist   <- dist.dna(SLC8A1_dnabin, model = "K80", gamma = TRUE)
+SLC8A1_tree   <- nj(SLC8A1_dist)
+SLC8A1_tree   <- root(SLC8A1_tree, outgroup = "Alligator", resolve.root = TRUE)
+plot(SLC8A1_tree)
+
+
 ## Question 1: Provide the code and the plot for your R35 rooted neighbor-joining tree. Make sure that the tip labels are clearly readable. (4 pts)
 
 ```{r R35-tree, fig.dim=c(8,8)}
+R35_dnabin <- as.DNAbin(R35_aligned)
+R35_dist   <- dist.dna(R35_dnabin, model = "K80", gamma = TRUE)
+R35_tree   <- nj(R35_dist)
+R35_tree   <- root(R35_tree, outgroup = "Alligator", resolve.root = TRUE)
+plot(R35_tree)
+
 ```
 
 ## Question 2: Provide the code and the plot for your rooted SLC8A1 tree; make sure the labels are readable. (4 pts)
 
 ```{r slc8A1-tree, fig.dim=c(8,8)}
+SLC8A1_dnabin <- as.DNAbin(SLC8A1_aligned)
+SLC8A1_dist   <- dist.dna(SLC8A1_dnabin, model = "K80", gamma = TRUE)
+SLC8A1_tree   <- nj(SLC8A1_dist)
+SLC8A1_tree   <- root(SLC8A1_tree, outgroup = "Alligator", resolve.root = TRUE)
+plot(SLC8A1_tree)
 ```
 
 ## Question 3: How many clades (or bipartitions) are unique to EACH tree? Which score tells you this? (1 pt)
@@ -39,7 +67,7 @@ SLC8A1_aligned <- msa(SLC8A1_seqs, method = "ClustalOmega")
 ```
 
 ## Question 4: Which gene (R35 or SLC8A1) shows the correct relationships? (1pt)
-
+write.phy(R35_dnabin, "R35_alignment.phy")
 # Part II: Running IQTree with 1000 Bootstrap Replicates
 
 ## Question 5: Copy and paste your IQTree bash command (with all parameters) that you used in your slurm script (1 pts)
@@ -49,8 +77,20 @@ SLC8A1_aligned <- msa(SLC8A1_seqs, method = "ClustalOmega")
 
 ## Question 6: Provide the R code and plot of your best IQTree tree with bootstrap support values. Make sure it is rooted, clearly labeled, and that all labels are legible. (3 pts) 
 
+best.tree = read.tree("R35_IQTree.treefile")
+boot.trees = read.tree("R35_IQTree.ufboot")
+
+rooted.tree = root(best.tree, outgroup="Alligator", resolve.root=TRUE)
+
+boot.support = prop.clades(rooted.tree, boot.trees)
+boot.support = boot.support/10
+
+plot(rooted.tree)
+nodelabels(boot.support)
+
 ```{r ml-tree, fig.dim=c(8,8), fig.keep="last"}
 ```
+
 
 # Part III: Perform Ancestral State Reconstruction
 
