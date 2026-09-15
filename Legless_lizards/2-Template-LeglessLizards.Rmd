@@ -1,0 +1,70 @@
+---
+title: "2-Legless-Lizards-Solutions"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/YOUR/WORKING/DIRECTORY/")
+
+### Load the standard packages for aligning and tree-construction
+library(msa)
+library(phangorn)
+library(phytools)
+```
+#Preparation
+
+R35_seqs <- readDNAStringSet("Reptiles_R35.fasta")
+R35_aligned <- msa(R35_seqs, method = "ClustalOmega")
+SLC8A1_seqs <- readDNAStringSet("Reptiles_SLC8A1.fasta")
+SLC8A1_aligned <- msa(SLC8A1_seqs, method = "ClustalOmega")
+
+
+# Part I: Use Neighbor-Joining Trees to Determine Which Gene To Use
+
+## Question 1: Provide the code and the plot for your R35 rooted neighbor-joining tree. Make sure that the tip labels are clearly readable. (4 pts)
+
+```{r R35-tree, fig.dim=c(8,8)}
+```
+
+## Question 2: Provide the code and the plot for your rooted SLC8A1 tree; make sure the labels are readable. (4 pts)
+
+```{r slc8A1-tree, fig.dim=c(8,8)}
+```
+
+## Question 3: How many clades (or bipartitions) are unique to EACH tree? Which score tells you this? (1 pt)
+
+```{r treecompare}
+```
+
+## Question 4: Which gene (R35 or SLC8A1) shows the correct relationships? (1pt)
+
+# Part II: Running IQTree with 1000 Bootstrap Replicates
+
+## Question 5: Copy and paste your IQTree bash command (with all parameters) that you used in your slurm script (1 pts)
+
+```{r, engine='bash', eval=FALSE}
+```
+
+## Question 6: Provide the R code and plot of your best IQTree tree with bootstrap support values. Make sure it is rooted, clearly labeled, and that all labels are legible. (3 pts) 
+
+```{r ml-tree, fig.dim=c(8,8), fig.keep="last"}
+```
+
+# Part III: Perform Ancestral State Reconstruction
+
+## Question 7: Provide the code and plot for your ML tree with reconstructed states based on the "all equal" transition cost model. Make sure tip labels are clearly visible, and provide a legend to indicate which state is represented by each color in your plot.  According to these results, how many times do you think limblessness evolved? Does this suggest multiple evolutions of "4-leggedness"? Are there any uncertainties with this method? (5 pts)
+
+```{r asr-all-equal, fig.dim=c(8,8)}
+```
+
+## Question 8: Provide the code for how you set up your custom transition matrix. (1 pt)
+
+```{r matrix}
+```
+
+## Question 9: Provide the code and plot of your final tree with ancestral state reconstructions using the custom matrix. Again, make sure you have clear labels and a legend.  How does this tree compare to the previous tree in terms of the number of transitions to limblessness or 4-leggedness? (5 pts)
+
+```{r asr-custom, fig.dim=c(8,8)}
+```
